@@ -65,8 +65,22 @@ version, producing a clean `delivered -> PROD -> DEV` history per program.
 > environment** that has JDBC reachability to the PeopleSoft DB. A self-contained,
 > transferable **fat-jar** (see BACKLOG #9) is the preferred delivery into that env, since
 > a hand-set `target/lib/` classpath is awkward to ship and a Homebrew JDK is not
-> guaranteed there. Until the fat-jar exists, the run host needs: a JRE/JDK 8+, the
-> compiled classes + `target/lib/*`, the Oracle JDBC driver, and `DecodePC.properties`.
+> guaranteed there. The transferable **fat-jar now exists** (M3.5):
+> `mvn clean package` → `target/decode-pcode-<version>-fat.jar` (~8 MB, app + svnkit + jgit;
+> Oracle driver excluded by design).
+>
+> **Deploying to the locked-down run host:** copy in (a) the fat-jar, (b) the Oracle JDBC
+> driver (`ojdbc11.jar`), (c) `run.sh`, and (d) a filled-in `DecodePC.properties`. Layout:
+> ```
+> decode-pcode/
+>   decode-pcode-<version>-fat.jar     # or under target/ — run.sh finds either
+>   jdbc/ojdbc11.jar
+>   run.sh
+>   DecodePC.properties
+> ```
+> Then run `./run.sh ProcessToFile`, or without bash:
+> `java -cp "decode-pcode-<version>-fat.jar:jdbc/ojdbc11.jar" decodepcode.Controller ProcessToFile`
+> (use `;` instead of `:` as the classpath separator on Windows). Requires only a JRE/JDK 8+.
 
 - **PeopleTools:** >= 8.52 → lossless PSPCMTXT path. The bytecode decoder never runs.
 - **Database:** Oracle (template provided). SQL Server also supported by upstream.
@@ -138,6 +152,7 @@ cp DecodePC.properties.oracle.template DecodePC.properties   # edit <PLACEHOLDER
 - [x] Fidelity question resolved: lossless PSPCMTXT path confirmed for PTools >= 8.52.
 - [x] Launcher, JDBC drop-in, and Oracle template committed (`b2391ca`).
 - [x] Credential guard (`skip-worktree`) applied locally.
+- [x] Transferable fat-jar built (M3.5); `run.sh` portable; verified to DB-driver boundary.
 - [ ] Live decode against a DEV database — **must run inside the locked-down PSFT env**
-      (not from this workstation); pending transferable artifact + JDBC driver + connection.
+      (not from this workstation); pending JDBC driver + filled-in connection on the run host.
 - [ ] Spot-check one decoded program against App Designer to close the loop (in that env).

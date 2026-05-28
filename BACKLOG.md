@@ -9,10 +9,10 @@ Tracked milestones live in [PLANS.md](./PLANS.md); this file is the longer-horiz
 
 ## Near-term (unblocks live use)
 
-1. **Package a transferable artifact (M3.5) — fat-jar preferred.**
-   Rationale: NEW top blocker. The run host is inside a locked-down env with no
-   Homebrew/Maven and no path back to this box, so the tool must ship as a
-   self-contained jar (or a documented classes+lib zip) plus run instructions.
+1. ~~**Package a transferable artifact (M3.5) — fat-jar.**~~ ✅ DONE
+   Built via maven-shade-plugin → `target/decode-pcode-<version>-fat.jar` (app + svnkit +
+   jgit; Oracle driver excluded by design). `run.sh` made portable (PATH `java`, no
+   Homebrew/Maven on the run host). Deploy steps in SPEC.md §4. Next blocker is now item 2.
 
 2. **Provision a read-only DEV DB account + JDBC driver (in the locked-down env).**
    Rationale: hard prerequisite for M4. Account needs only the SELECT grants in

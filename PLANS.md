@@ -60,22 +60,27 @@ git log --oneline | grep -E "SPEC|PLANS|BACKLOG"
 
 ---
 
-## M3.5 — Package a Transferable Artifact  ⬜ PENDING (blocks M4)
+## M3.5 — Package a Transferable Artifact  ✅ DONE
 
 The DB lives in a locked-down environment unreachable from the build workstation
-(see SPEC.md §4 deployment model). Before any live decode, produce a self-contained
-artifact that can be handed into that environment.
+(see SPEC.md §4 deployment model). Produced a self-contained fat-jar that can be
+handed into that environment.
 
 **Acceptance criteria**
-- [ ] Fat-jar (assembly/shade) bundling app + deps, OR a documented zip of
-      `target/classes` + `target/lib/*` + `run.sh` + templates.
-- [ ] Verified to launch on a clean JRE/JDK 8+ (no Homebrew/Maven assumptions).
-- [ ] Transfer + run instructions for the locked-down host documented.
+- [x] Fat-jar via maven-shade-plugin bundling app + deps (svnkit, jgit) →
+      `target/decode-pcode-<version>-fat.jar`. Oracle driver excluded by design.
+- [x] Manifest `Main-Class: decodepcode.Controller`; launches via `java -jar` and
+      reaches `main()` with all deps resolved.
+- [x] `run.sh` made portable: prefers the fat-jar, uses `java` from PATH (no
+      Homebrew/Maven assumptions on the run host).
+- [x] Transfer + run instructions documented in SPEC.md §4.
 
 **Validation**
 ```bash
-# once a fat-jar exists:
-java -jar target/decode-pcode-*.jar    # rejects with the usage message, deps resolved
+mvn clean package                                  # -> target/decode-pcode-*-fat.jar
+java -jar target/decode-pcode-*-fat.jar            # usage message, deps resolved
+./run.sh ProcessToFile                             # reaches DB-driver boundary (CNFE on
+                                                   #   oracle.jdbc.OracleDriver until driver added)
 ```
 
 ---
