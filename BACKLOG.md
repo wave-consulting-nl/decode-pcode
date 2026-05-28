@@ -58,13 +58,22 @@ Tracked milestones live in [PLANS.md](./PLANS.md); this file is the longer-horiz
    (The fat-jar that previously lived here is now near-term item 1 — it became the
    top blocker once we knew the run host is a separate, locked-down environment.)
 
-10. **Audit transitive deps for CVEs.**
-    Rationale: 2017-era svnkit 1.3.5 / jgit 4.7 pull old transitive libraries.
-    Run `mvn dependency:tree` + OWASP Dependency-Check before any networked use.
+10. ~~**Audit transitive deps for CVEs.**~~ ✅ DONE — see [SECURITY-AUDIT.md](./SECURITY-AUDIT.md)
+    Scanned 15 deps with grype. 3 findings, all in the jgit subtree (1 High jgit file-overwrite,
+    1 Medium jgit XXE, 1 Medium httpclient). All only reachable in `ProcessToGit`, and none
+    match our data flow → effective risk ~none for `ProcessToFile`. FOLLOW-UP (item 12): if
+    `ProcessToGit` is adopted, bump jgit to 5.13.4.202507202350-r (last Java-8 line) to clear
+    all three; must be validated where a Git remote exists.
 
 11. **Evaluate broader object export vs. PeopleCode-only.**
     Rationale: this tool covers PeopleCode (+ SQL objects) only. If we want records,
     pages, and components under VCS too, assess a complementary tool or extend scope.
+
+12. **Bump jgit to 5.13.4.202507202350-r (only if `ProcessToGit` is adopted).**
+    Rationale: clears all 3 audit findings (SECURITY-AUDIT.md). Last Java-8-compatible
+    jgit line — 6.x+ needs Java 11+ and would break the `release 8` pin. Conditional on
+    using the Git pipeline; must be rebuilt + validated against a real Git remote (cannot
+    be tested on the air-gapped build host). Not needed for `ProcessToFile`.
 
 ## Notes
 
