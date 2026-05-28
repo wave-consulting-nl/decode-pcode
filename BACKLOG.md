@@ -48,10 +48,12 @@ Tracked milestones live in [PLANS.md](./PLANS.md); this file is the longer-horiz
 
 ## Hardening / maintenance
 
-9. **Pin a `maven-compiler-plugin` release in `pom.xml`.**
-   Rationale: currently relies on the implicit target 1.8 default (obsolescence
-   warnings on JDK 26). Pin to an explicit release (e.g. 11 or 17) to stop relying
-   on deprecated defaults that future JDKs will remove.
+9. ~~**Pin a `maven-compiler-plugin` release in `pom.xml`.**~~ ✅ DONE
+   Pinned maven-compiler-plugin 3.13.0 with `maven.compiler.release=8` → deterministic
+   Java 8 bytecode (class major version 52), runnable on any JRE 8+. NOTE: JDK 26 warns
+   that `release 8` is obsolete and may be removed in a future JDK — if a future *build*
+   JDK drops it, bump the release to 11 or 17 and update the "Java 8+" claim in
+   RUNBOOK.md/SPEC.md accordingly.
 
    (The fat-jar that previously lived here is now near-term item 1 — it became the
    top blocker once we knew the run host is a separate, locked-down environment.)

@@ -85,7 +85,8 @@ version, producing a clean `delivered -> PROD -> DEV` history per program.
 - **PeopleTools:** >= 8.52 → lossless PSPCMTXT path. The bytecode decoder never runs.
 - **Database:** Oracle (template provided). SQL Server also supported by upstream.
 - **Build host (here):** macOS (Apple Silicon), Homebrew, OpenJDK 26 (keg-only),
-  Maven 3.9.16. Project compiles at target 1.8 (warnings only).
+  Maven 3.9.16. Compiler plugin pinned (3.13.0) to `release 8` → Java 8 bytecode
+  (class major version 52), so output runs on any JRE 8+.
 - **Run host (locked-down env):** any JRE/JDK 8+ with DB reachability and the artifact above.
 
 ### Required DB grants (read-only account)
