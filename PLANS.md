@@ -60,11 +60,34 @@ git log --oneline | grep -E "SPEC|PLANS|BACKLOG"
 
 ---
 
-## M4 — Live Decode (DEV)  ⬜ PENDING
+## M3.5 — Package a Transferable Artifact  ⬜ PENDING (blocks M4)
 
-Run an end-to-end extraction against a read-only DEV database.
+The DB lives in a locked-down environment unreachable from the build workstation
+(see SPEC.md §4 deployment model). Before any live decode, produce a self-contained
+artifact that can be handed into that environment.
 
-**Prerequisites (user-supplied)**
+**Acceptance criteria**
+- [ ] Fat-jar (assembly/shade) bundling app + deps, OR a documented zip of
+      `target/classes` + `target/lib/*` + `run.sh` + templates.
+- [ ] Verified to launch on a clean JRE/JDK 8+ (no Homebrew/Maven assumptions).
+- [ ] Transfer + run instructions for the locked-down host documented.
+
+**Validation**
+```bash
+# once a fat-jar exists:
+java -jar target/decode-pcode-*.jar    # rejects with the usage message, deps resolved
+```
+
+---
+
+## M4 — Live Decode (DEV)  ⬜ PENDING — RUNS INSIDE LOCKED-DOWN ENV
+
+Run an end-to-end extraction against a read-only DEV database. **Cannot run from the
+build workstation** — executes on a host inside the locked-down PSFT environment with
+JDBC reachability.
+
+**Prerequisites (in the locked-down env)**
+- Transferable artifact from M3.5 + a JRE/JDK 8+.
 - Oracle JDBC driver (`ojdbc11.jar`) placed in `jdbc/`.
 - Read-only DEV account with SELECT grants (see SPEC.md §4).
 - `DecodePC.properties` filled in from the Oracle template.
@@ -85,10 +108,11 @@ find out/DEV -type f | head                                  # decoded files pre
 
 ---
 
-## M5 — Fidelity Spot-Check  ⬜ PENDING
+## M5 — Fidelity Spot-Check  ⬜ PENDING — INSIDE LOCKED-DOWN ENV
 
 Confirm decoded output matches what App Designer shows (formality on 8.52+, but
-closes the loop).
+closes the loop). Performed in the locked-down env where both the decoded output and
+App Designer are available.
 
 **Acceptance criteria**
 - [ ] Pick 2-3 known programs (1 delivered, 1 customized, 1 App Package).
@@ -101,9 +125,10 @@ closes the loop).
 
 ---
 
-## M6 — Optional: VCS Pipeline  ⬜ FUTURE
+## M6 — Optional: VCS Pipeline  ⬜ FUTURE — INSIDE LOCKED-DOWN ENV
 
-Wire the extract into Git for ongoing history. See BACKLOG.md for sub-tasks.
+Wire the extract into Git for ongoing history. Runs in the locked-down env (DB access
+required); a destination repo reachable from that env is needed. See BACKLOG.md for sub-tasks.
 
 **Acceptance criteria**
 - [ ] `./run.sh ProcessToGit` commits decoded code into a target repo.

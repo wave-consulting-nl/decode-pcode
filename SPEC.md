@@ -57,11 +57,22 @@ version, producing a clean `delivered -> PROD -> DEV` history per program.
 
 ## 4. Target Environment (this fork's verified context)
 
+> **Deployment model (IMPORTANT).** The PeopleSoft database lives in a **locked-down
+> environment** with no network path from this workstation. This macOS box is a
+> **dev/reference build only** — it compiles, packages, and holds the docs/config
+> templates, but it **cannot reach the database** and will **not** run a live decode
+> (milestones M4/M5). The actual extraction must run on a **host inside the locked-down
+> environment** that has JDBC reachability to the PeopleSoft DB. A self-contained,
+> transferable **fat-jar** (see BACKLOG #9) is the preferred delivery into that env, since
+> a hand-set `target/lib/` classpath is awkward to ship and a Homebrew JDK is not
+> guaranteed there. Until the fat-jar exists, the run host needs: a JRE/JDK 8+, the
+> compiled classes + `target/lib/*`, the Oracle JDBC driver, and `DecodePC.properties`.
+
 - **PeopleTools:** >= 8.52 → lossless PSPCMTXT path. The bytecode decoder never runs.
 - **Database:** Oracle (template provided). SQL Server also supported by upstream.
-- **Host:** macOS (Apple Silicon), Homebrew.
-- **JDK:** Homebrew OpenJDK 26 (keg-only). Project compiles at target 1.8 (warnings only).
-- **Maven:** 3.9.16.
+- **Build host (here):** macOS (Apple Silicon), Homebrew, OpenJDK 26 (keg-only),
+  Maven 3.9.16. Project compiles at target 1.8 (warnings only).
+- **Run host (locked-down env):** any JRE/JDK 8+ with DB reachability and the artifact above.
 
 ### Required DB grants (read-only account)
 `SELECT` on: `PSPCMPROG`, `PSPCMNAME`, `PSPCMTXT`, `PSSQLDEFN`, `PSSQLTEXTDEFN`,
@@ -127,5 +138,6 @@ cp DecodePC.properties.oracle.template DecodePC.properties   # edit <PLACEHOLDER
 - [x] Fidelity question resolved: lossless PSPCMTXT path confirmed for PTools >= 8.52.
 - [x] Launcher, JDBC drop-in, and Oracle template committed (`b2391ca`).
 - [x] Credential guard (`skip-worktree`) applied locally.
-- [ ] Live decode against a DEV database — pending JDBC driver + filled-in connection.
-- [ ] Spot-check one decoded program against App Designer to close the loop.
+- [ ] Live decode against a DEV database — **must run inside the locked-down PSFT env**
+      (not from this workstation); pending transferable artifact + JDBC driver + connection.
+- [ ] Spot-check one decoded program against App Designer to close the loop (in that env).
