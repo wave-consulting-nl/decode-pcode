@@ -1,0 +1,69 @@
+# =============================================================================
+# decode-pcode configuration — Oracle, PeopleTools >= 8.52
+# =============================================================================
+# Fill in the <PLACEHOLDER> values, then copy to DecodePC.properties:
+#     cp DecodePC.properties.oracle.template DecodePC.properties
+# Run with:  ./run.sh ProcessToFile
+#
+# Use a READ-ONLY account. Required SELECT grants:
+#   PSPCMPROG  PSPCMNAME  PSPCMTXT  PSSQLDEFN  PSSQLTEXTDEFN  PSPROJECTITEM  PSPACKAGEDEFN
+# PSPCMTXT exists on PeopleTools >= 8.52 and holds plaintext PeopleCode, so the
+# fragile bytecode decoder is bypassed entirely. Leave AlwaysDecode unset.
+# =============================================================================
+
+# --- Base environment: DEV ---------------------------------------------------
+# 'user' is the schema you LOG IN as (your read-only account).
+# 'dbowner' is the schema that OWNS the PeopleSoft tables — almost always SYSADM.
+# If user == dbowner you may leave dbowner blank, but setting it is safest.
+user=<RO_USER>
+password=<RO_PASSWORD>
+dbowner=SYSADM
+driverClass=oracle.jdbc.OracleDriver
+
+# Oracle thin URL. Pick ONE form:
+#   Service name (12c+ / pluggable, most common today):
+url=jdbc:oracle:thin:@<HOST>:1521/<SERVICE_NAME>
+#   SID (older instances):
+#url=jdbc:oracle:thin:@<HOST>:1521:<SID>
+
+# Optional: if the DB server clock is in a different time zone than this Mac,
+# subtract this many minutes from the 'last-time' watermark before comparing
+# against LASTUPDDTTM. Leave commented unless you see missed/duplicate commits.
+#last-time-offset=60
+
+# Force the bytecode decoder even though PSPCMTXT exists. DO NOT enable on 8.52+
+# unless you are deliberately avoiding whitespace-only diffs from PSPCMTXT.
+#AlwaysDecode=true
+
+# --- Output: decode to a file tree -------------------------------------------
+# Relative paths are resolved from the repo root (where ./run.sh runs).
+outdir=./out/DEV
+
+# =============================================================================
+# OPTIONAL: commit decoded code straight into Git instead of (or in addition to)
+# writing files. Uncomment this block and run:  ./run.sh ProcessToGit
+# =============================================================================
+# gitdir=./out/git/HRDEV
+# gitbase=HRDEV
+# # Author used when the PeopleSoft LASTUPDOPRID is not mapped below.
+# # Format: OPRID/Display Name/email
+# gituser=dummy/PeopleSoft Extract/peoplesoft-extract@wave-consulting.nl
+# # Map delivered code (PPLSOFT) to a recognizable author:
+# gituser1=PPLSOFT/PeopleSoft/delivered@oracle.com
+# # Add one line per developer OPRID you want attributed:
+# #gituser2=JDOE/Jane Doe/jane.doe@wave-consulting.nl
+
+# =============================================================================
+# OPTIONAL: a second environment for diff/ancestor history (e.g. PROD).
+# When 'ancestor' is set, an object's PROD version is committed first, then the
+# DEV version — giving a clean "delivered -> PROD -> DEV" history per program.
+# Uncomment and point processPROD at the processing type you want.
+# =============================================================================
+# processPROD=ProcessToFile
+# userPROD=<RO_USER>
+# passwordPROD=<RO_PASSWORD>
+# dbownerPROD=SYSADM
+# urlPROD=jdbc:oracle:thin:@<HOST>:1521/<PROD_SERVICE_NAME>
+# outdirPROD=./out/PROD
+# # Make DEV's history descend from PROD:
+# ancestor=PROD
